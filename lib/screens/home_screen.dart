@@ -94,7 +94,11 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _mensajeError = 'Ocurrió un error al guardar.');
+      //aquí empiezan los cambios nuevos pongo este texto para tener referencia de lo nuevo que agreo al proyecto
+      //para cuando lo quiera modificar saber cuales fueron los cambios es como para ir partiendo el codigo 
+      final mensajeLimpio = e.toString().replaceFirst('StateError: ', '');
+      setState(() => _mensajeError = mensajeLimpio);
+      
     } finally {
       if (mounted) setState(() => _enviando = false);
     }
@@ -195,7 +199,9 @@ class _HomeScreenState extends State<HomeScreen> {
               Card(
                 child: ListTile(
                   leading: const Icon(Icons.checkroom, color: Colors.blueAccent),
+                  
                   title: Text('Talla: ${bata.talla} - ${bata.ubicacion}'),
+                  
                   subtitle: Text('Contacto: ${bata.correoEstudiante}'),
                   trailing: Text('#${bata.id}'),
                 ),

@@ -1,51 +1,82 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/bata.dart';
-//ESta parte es nueva que investigue para que los datos persistan incluso si cierran o vuelvemoss abrir la app
-//esto es nuevo esto no lo sabía hacer 
+
 class BataService {
   static const String _keyBatas = 'inventario_batas_pascual';
 
-  // Listar batas guardadas
-  Future<List<Bata>> listar() async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? dataString = prefs.getString(_keyBatas);
-    if (dataString == null) return [];
+  // Colección en memoria compartida (Simulación de API/Backend)
+  static final List<Bata> _batasEnMemoria = [];
+  static bool _cargadoDesdeStorage = false;
 
-    List<dynamic> jsonList = jsonDecode(dataString);
-    return jsonList.map((json) => Bata.fromJson(json)).toList();
+  // 1. Listar batas (simula respuesta de red con Future.delayed)
+  Future<List<Bata>> listar() async {
+    // Simula retraso de respuesta de API (500ms)
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // Si es la primera vez, cargamos lo que haya persistido en SharedPreferences
+    if (!_cargadoDesdeStorage) {
+      final prefs = await SharedPreferences.getInstance();
+      final String? dataString = prefs.getString(_keyBatas);
+      if (dataString != null) {
+        List<dynamic> jsonList = jsonDecode(dataString);
+        _batasEnMemoria.clear();
+        _batasEnMemoria.addAll(jsonList.map((json) => Bata.fromJson(json)));
+      }
+      _cargadoDesdeStorage = true;
+    }
+
+    // Devuelve una lista inmutable para proteger la colección interna
+    return List<Bata>.unmodifiable(_batasEnMemoria);
   }
 
-  // Crear y guardar nueva bata
+  // 2. Crear nueva bata (con regla de negocio y simulación asíncrona)
   Future<Bata> crear({
     required String talla,
     required String estado,
     required String ubicacion,
     required String correoEstudiante,
   }) async {
-    // Simulamos un retraso de red con Future.delayed
-    await Future.delayed(const Duration(milliseconds: 600));
+    // Simula retraso de escritura de red (800ms)
+    await Future.delayed(const Duration(milliseconds: 800));
 
-    final prefs = await SharedPreferences.getInstance();
-    List<Bata> actualList = await listar();
+    final correoNormalizado = correoEstudiante.trim().toLowerCase();
+    final tallaNormalizada = talla.trim().toUpperCase();
+    final ubicacionNormalizada = ubicacion.trim();
 
-    final nuevoId = actualList.isEmpty ? 1 : actualList.first.id + 1;
+    // REGLA DE NEGOCIO (Exigida por el Taller 2):
+    // Impide duplicados si el mismo estudiante ya tiene una bata publicada con la misma talla y ubicación.
+    final yaExisteDuplicado = _batasEnMemoria.any((bata) =>
+        bata.correoEstudiante == correoNormalizado &&
+        bata.talla == tallaNormalizada &&
+        bata.ubicacion.toLowerCase() == ubicacionNormalizada.toLowerCase());
+
+    if (yaExisteDuplicado) {
+      throw StateError(
+          'Ya registraste una bata talla $tallaNormalizada en $ubicacionNormalizada con este correo.');
+    }
+
+    // Generar nuevo ID
+    final nuevoId = _batasEnMemoria.isEmpty ? 1 : _batasEnMemoria.first.id + 1;
 
     final nuevaBata = Bata(
       id: nuevoId,
-      talla: talla,
+      talla: tallaNormalizada,
       estado: estado,
-      ubicacion: ubicacion,
-      correoEstudiante: correoEstudiante.trim().toLowerCase(),
+      ubicacion: ubicacionNormalizada,
+      correoEstudiante: correoNormalizado,
       creadoEn: DateTime.now(),
     );
 
-    actualList.insert(0, nuevaBata);
+    // Insertar al inicio de la colección en memoria
+    _batasEnMemoria.insert(0, nuevaBata);
 
-    // Guardar lista actualizada en formato JSON string
-    List<Map<String, dynamic>> jsonList =
-        actualList.map((b) => b.toJson()).toList();
-    await prefs.setString(_keyBatas, jsonEncode(jsonList));
+    // Sincronizar con SharedPreferences (sin tipos complejos para evitar errores de copiado)
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      _keyBatas,
+      jsonEncode(_batasEnMemoria.map((b) => b.toJson()).toList()),
+    );
 
     return nuevaBata;
   }
