@@ -28,6 +28,10 @@ class _HomeScreenState extends State<HomeScreen> {
   final _validarCorreo = MultiValidator([
     RequiredValidator(errorText: 'Escribe un correo.'),
     EmailValidator(errorText: 'Revisa el formato del correo.'),
+    PatternValidator(
+      r'@pascualbravo\.edu\.co$', 
+      errorText: 'Solo se permiten correos institucionales (@pascualbravo.edu.co)',
+    ),
   ]);
 
   @override

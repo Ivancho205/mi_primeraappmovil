@@ -44,7 +44,7 @@ class BataService {
     final tallaNormalizada = talla.trim().toUpperCase();
     final ubicacionNormalizada = ubicacion.trim();
 
-    // REGLA DE NEGOCIO (Exigida por el Taller 2):
+    
     // Impide duplicados si el mismo estudiante ya tiene una bata publicada con la misma talla y ubicación.
     final yaExisteDuplicado = _batasEnMemoria.any((bata) =>
         bata.correoEstudiante == correoNormalizado &&
