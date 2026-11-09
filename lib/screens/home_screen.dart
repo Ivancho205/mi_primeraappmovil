@@ -3,7 +3,7 @@ import 'package:form_field_validator/form_field_validator.dart';
 import '../models/bata.dart';
 import '../services/bata_service.dart';
 import '../widgets/firma_canvas.dart';
-
+// Es un StatefulWidget porque la pantalla necesita cambiar de estado por ende lo uso aquí
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -11,19 +11,25 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+
 class _HomeScreenState extends State<HomeScreen> {
+  
   final _formKey = GlobalKey<FormState>();
+
+  // estos de aqui son Controladores para capturar el texto que el usuario escribe en los inputs y tin 
   final _tallaController = TextEditingController();
   final _ubicacionController = TextEditingController();
   final _correoController = TextEditingController();
   final BataService _servicio = BataService();
 
+//esto aqui mas o menos es lo que vigila que todo esta guardando
   List<Bata> _batas = [];
   bool _cargandoLista = true;
   bool _enviando = false;
   bool _firmado = false;
   String? _mensajeError;
 
+//validador para que los campos no esten vacios y pues se guarden batas con campos en blanco
   final _validarRequerido = RequiredValidator(errorText: 'Este campo es obligatorio.');
   final _validarCorreo = MultiValidator([
     RequiredValidator(errorText: 'Escribe un correo.'),
@@ -47,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _correoController.dispose();
     super.dispose();
   }
-
+//esta parte de aquí muestra las batas cuando las guardamos osea esa listica que sale ahí abajo
   Future<void> _cargarBatas() async {
     try {
       final datos = await _servicio.listar();
@@ -63,6 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _guardarBata() async {
     if (_enviando) return;
+    //valida que los campos cumplan con el las reglas 
     final valido = _formKey.currentState?.validate() ?? false;
     if (!valido) return;
 
@@ -70,6 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() => _mensajeError = 'Debes firmar en el recuadro de Canvas.');
       return;
     }
+    //esta parte eaqui fue nueva y es para el teclado del cel
 
     FocusManager.instance.primaryFocus?.unfocus();
 
@@ -85,6 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ubicacion: _ubicacionController.text.trim(),
         correoEstudiante: _correoController.text.trim(),
       );
+      //esto aquí limpia los campos nada nuevo entonces pero para tenerlo en cuenta
 
       if (!mounted) return;
       _tallaController.clear();
