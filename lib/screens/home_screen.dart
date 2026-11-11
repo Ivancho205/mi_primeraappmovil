@@ -29,6 +29,9 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _firmado = false;
   String? _mensajeError;
 
+  final Color _colorPrimario = const Color(0xFF5B2D82);  
+  final Color _colorSecundario = const Color(0xFF7A3EB1); 
+
 //validador para que los campos no esten vacios y pues se guarden batas con campos en blanco
   final _validarRequerido = RequiredValidator(errorText: 'Este campo es obligatorio.');
   final _validarCorreo = MultiValidator([
@@ -122,8 +125,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('TruequeU - Préstamo de Batas'),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: _colorPrimario, 
         foregroundColor: Colors.white,
+        elevation: 2,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
