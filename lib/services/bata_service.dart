@@ -36,6 +36,7 @@ class BataService {
     required String estado,
     required String ubicacion,
     required String correoEstudiante,
+    required String tipoOperacion,
   }) async {
     // Simula retraso de escritura de red (800ms)
     await Future.delayed(const Duration(milliseconds: 800));
@@ -66,10 +67,12 @@ class BataService {
       ubicacion: ubicacionNormalizada,
       correoEstudiante: correoNormalizado,
       creadoEn: DateTime.now(),
+      tipoOperacion: tipoOperacion,
     );
 
     // Insertar al inicio de la colección en memoria
     _batasEnMemoria.insert(0, nuevaBata);
+    //await _guardarEnStorage(); por ahora es mejor dejarla así
 
     // Sincronizar con SharedPreferences (sin tipos complejos para evitar errores de copiado)
     final prefs = await SharedPreferences.getInstance();

@@ -70,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _guardarBata() async {
+  Future<void> _guardarBata(String tipoOperacion) async {
     if (_enviando) return;
     //valida que los campos cumplan con el las reglas 
     final valido = _formKey.currentState?.validate() ?? false;
@@ -95,6 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
         estado: 'Excelente',
         ubicacion: _ubicacionController.text.trim(),
         correoEstudiante: _correoController.text.trim(),
+        tipoOperacion: tipoOperacion,
       );
       //esto aquí limpia los campos nada nuevo entonces pero para tenerlo en cuenta
 
@@ -184,20 +185,37 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: TextStyle(color: Theme.of(context).colorScheme.error),
                     ),
                   ),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _enviando ? null : _guardarBata,
-                    icon: _enviando
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.science),
-                    label: Text(_enviando ? 'Registrando...' : 'Publicar / Solicitar Bata'),
-                  ),
-                ),
+                Row(
+  children: [
+    // Botón 1: Publicar Bata para Prestar
+    Expanded(
+      child: ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _colorPrimario,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+        ),
+        onPressed: _enviando ? null : () => _guardarBata('Ofrecer'),
+        icon: const Icon(Icons.add_business),
+        label: Text(_enviando ? 'Guardando...' : 'Ofrecer Bata'),
+      ),
+    ),
+    const SizedBox(width: 10),
+    // Botón 2: Solicitar Préstamo de Bata
+    Expanded(
+      child: OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: _colorPrimario,
+          side: BorderSide(color: _colorPrimario),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+        ),
+        onPressed: _enviando ? null : () => _guardarBata('Solicitar'),
+        icon: const Icon(Icons.handshake),
+        label: Text(_enviando ? 'Procesando...' : 'Solicitar Bata'),
+      ),
+    ),
+  ],
+)
               ],
             ),
           ),
@@ -214,15 +232,40 @@ class _HomeScreenState extends State<HomeScreen> {
           else
             for (final bata in _batas)
               Card(
-                child: ListTile(
-                  leading: const Icon(Icons.checkroom, color: Colors.blueAccent),
-                  
-                  title: Text('Talla: ${bata.talla} - ${bata.ubicacion}'),
-                  
-                  subtitle: Text('Contacto: ${bata.correoEstudiante}'),
-                  trailing: Text('#${bata.id}'),
+                elevation: 2,
+                  margin: const EdgeInsets.symmetric(vertical: 6),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: bata.tipoOperacion == 'Ofrecer'
+                      ? Colors.green.shade100
+                      : Colors.orange.shade100,
+                      child: Icon(
+                        bata.tipoOperacion == 'Ofrecer' ? Icons.checkroom : Icons.search,
+                        color: bata.tipoOperacion == 'Ofrecer' ? Colors.green.shade800 : Colors.orange.shade800,
                 ),
               ),
+              title: Text(
+                'Talla: ${bata.talla} - Ubicación: ${bata.ubicacion}',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(
+                '${bata.tipoOperacion == "Ofrecer" ? "Disponible de" : "Solicitado por"}: ${bata.correoEstudiante}',
+              ),
+              trailing: Chip(
+                label: Text(bata.tipoOperacion),
+                backgroundColor: bata.tipoOperacion == 'Ofrecer'
+                ? Colors.green.shade50
+                : Colors.orange.shade50,
+              labelStyle: TextStyle(
+                color: bata.tipoOperacion == 'Ofrecer'
+                ? Colors.green.shade800
+                : Colors.orange.shade800,
+                fontWeight: FontWeight.bold,
+              ),
+            ), 
+          ),
+         ),        
+        
         ],
       ),
     );
